@@ -30,21 +30,19 @@ type GitHubTreeResponse = {
   tree: GitHubTreeFile[];
 };
 
-const cpuFileListCache: {
+const partFileListCache = new Map<string, {
   files: GitHubTreeFile[];
   expiresAt: number;
-} = {
-  files: [],
-  expiresAt: 0,
-};
+}>();
 
-const CPU_PAGE_SIZE = 20;
-const MAX_CPU_PAGE_SIZE = 100;
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 100;
 const CPU_FILE_LIST_CACHE_MS = 5 * 60 * 1000;
 
-async function getCpuFiles(): Promise<GitHubTreeFile[]> {
-  if (cpuFileListCache.expiresAt > Date.now()) {
-    return cpuFileListCache.files;
+async function getPartFiles(partType: string): Promise<GitHubTreeFile[]> {
+  const cached = partFileListCache.get(partType);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.files;
   }
 
   const treeResponse = await fetch(
@@ -71,15 +69,17 @@ async function getCpuFiles(): Promise<GitHubTreeFile[]> {
     );
   }
 
-  const cpuFiles = treeResult.tree.filter(
+  const partFiles = treeResult.tree.filter(
     (file) =>
       file.type === "blob" &&
-      /^open-db\/CPU\/[^/]+\.json$/i.test(file.path)
+      new RegExp(`^open-db/${partType}/[^/]+\\.json$`, "i").test(file.path)
   );
 
-  cpuFileListCache.files = cpuFiles;
-  cpuFileListCache.expiresAt = Date.now() + CPU_FILE_LIST_CACHE_MS;
-  return cpuFiles;
+  partFileListCache.set(partType, {
+    files: partFiles,
+    expiresAt: Date.now() + CPU_FILE_LIST_CACHE_MS,
+  });
+  return partFiles;
 }
 
 function parseNonNegativeInteger(value: unknown, fallback: number): number {
@@ -90,18 +90,18 @@ function parseNonNegativeInteger(value: unknown, fallback: number): number {
   return Number(value);
 }
 
-app.get("/api/cpus", async (req, res) => {
+async function getParts(partType: string, req: express.Request, res: express.Response) {
   try {
     const offset = parseNonNegativeInteger(req.query.offset, 0);
     const requestedLimit = parseNonNegativeInteger(
       req.query.limit,
-      CPU_PAGE_SIZE
+      DEFAULT_PAGE_SIZE
     );
-    const limit = Math.min(requestedLimit, MAX_CPU_PAGE_SIZE);
-    const cpuFiles = await getCpuFiles();
-    const pageFiles = cpuFiles.slice(offset, offset + limit);
+    const limit = Math.min(requestedLimit, MAX_PAGE_SIZE);
+    const partFiles = await getPartFiles(partType);
+    const pageFiles = partFiles.slice(offset, offset + limit);
 
-    const cpus: unknown[] = [];
+    const parts: unknown[] = [];
     const failedFiles: string[] = [];
     const concurrency = 10;
 
@@ -128,17 +128,17 @@ app.get("/api/cpus", async (req, res) => {
         })
       );
 
-      cpus.push(...results.filter((cpu) => cpu !== null));
+      parts.push(...results.filter((part) => part !== null));
     }
 
     res.json({
-      count: cpus.length,
-      totalFiles: cpuFiles.length,
+      count: parts.length,
+      totalFiles: partFiles.length,
       offset,
       limit,
-      hasMore: offset + pageFiles.length < cpuFiles.length,
+      hasMore: offset + pageFiles.length < partFiles.length,
       failedCount: failedFiles.length,
-      data: cpus,
+      data: parts,
     });
   } catch (error) {
     console.error("CPU catalog error:", error);
@@ -149,7 +149,13 @@ app.get("/api/cpus", async (req, res) => {
         error instanceof Error ? error.message : "Unknown error",
     });
   }
-});
+}
+
+app.get("/api/cpus", (req, res) => getParts("CPU", req, res));
+app.get("/api/gpus", (req, res) => getParts("GPU", req, res));
+app.get("/api/motherboards", (req, res) => getParts("Motherboard", req, res));
+app.get("/api/psus", (req, res) => getParts("PSU", req, res));
+app.get("/api/rams", (req, res) => getParts("RAM", req, res));
 
 
 export default app;

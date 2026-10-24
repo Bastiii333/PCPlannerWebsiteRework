@@ -1,6 +1,15 @@
-import PartSelector from './PartSelector'
+import { useState } from 'react'
+import CpuSelector from './components/CpuSelector'
+import GpuSelector from './components/GpuSelector'
+import MotherboardSelector from './components/MotherboardSelector'
+import PsuSelector from './components/PsuSelector'
+import RamSelector from './components/RamSelector'
+import type { PartOption } from './types/parts'
 
 function BuildingPage() {
+  const [selectedCpu, setSelectedCpu] = useState<PartOption | null>(null)
+  const [selectedMotherboard, setSelectedMotherboard] = useState<PartOption | null>(null)
+
   return (
     <main
       id="building-page"
@@ -34,7 +43,23 @@ function BuildingPage() {
           data-element="build-content"
           className="relative min-h-[calc(100vh-10rem)]"
         >
-          <PartSelector />
+          <CpuSelector
+            selected={selectedCpu}
+            onSelectedChange={setSelectedCpu}
+            compatibleSocket={selectedMotherboard?.socket}
+          />
+          <GpuSelector />
+          <MotherboardSelector
+            selected={selectedMotherboard}
+            onSelectedChange={setSelectedMotherboard}
+            compatibleSocket={selectedCpu?.socket}
+          />
+          <RamSelector
+            key={selectedMotherboard?.value ?? 'no-motherboard'}
+            slotCount={selectedMotherboard?.ramSlots ?? 0}
+            ramType={selectedMotherboard?.ramType}
+          />
+          <PsuSelector />
         </section>
       </div>
     </main>
