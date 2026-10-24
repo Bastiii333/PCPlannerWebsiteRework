@@ -40,7 +40,16 @@ function PartSelector({
       data-element="selector-window"
       className="part-selector-window"
     >
-      <div id={selectionId} data-component="PartSelectionSection" data-element="selector-card" className="selector-card">
+      <div
+        id={selectionId}
+        data-component="PartSelectionSection"
+        data-element="selector-card"
+        className="selector-card"
+        onPointerDown={(event) => event.stopPropagation()}
+        onPointerMove={(event) => event.stopPropagation()}
+        onPointerUp={(event) => event.stopPropagation()}
+        onWheel={(event) => event.stopPropagation()}
+      >
         <div id={`${selectionId}-title-bar`} data-element="window-title-bar" className="part-selector-drag-handle selector-title-bar">
           <div data-element="section-icon" className="selector-icon">{icon}</div>
           <div data-element="section-heading">

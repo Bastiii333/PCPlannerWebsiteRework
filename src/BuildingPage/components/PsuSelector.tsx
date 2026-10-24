@@ -30,7 +30,7 @@ function PsuSelector() {
   return (
     <PartSelector
       windowId="psu-selector-window" selectionId="psu-selection" inputId="psu-select"
-      title="Select your PSU" icon="🔌" defaultPosition={{ x: 560, y: 400 }}
+      title="Select your PSU" icon="🔌" defaultPosition={{ x: 1160, y: 1460 }}
       options={psu.options} value={psu.selected} onChange={psu.setSelected}
       isLoading={psu.isLoading} isLoadingMore={psu.isLoadingMore}
       hasMore={psu.hasMore} onLoadMore={psu.loadMore} error={psu.error}

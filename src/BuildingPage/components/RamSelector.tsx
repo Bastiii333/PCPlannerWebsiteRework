@@ -58,13 +58,22 @@ function RamSelector({ slotCount, ramType }: RamSelectorProps) {
       id="ram-selector-window"
       data-component="RamSelectorWindow"
       bounds="parent"
-      default={{ x: 1060, y: 16, width: 'min(520px, calc(100vw - 32px))', height: 360 }}
+      default={{ x: 2300, y: 1660, width: 'min(520px, calc(100vw - 32px))', height: 360 }}
       enableResizing={false}
       dragHandleClassName="part-selector-drag-handle"
       data-element="selector-window"
       className="part-selector-window"
     >
-      <div id="ram-selection" data-component="RamSelectionSection" data-element="selector-card" className="selector-card">
+      <div
+        id="ram-selection"
+        data-component="RamSelectionSection"
+        data-element="selector-card"
+        className="selector-card"
+        onPointerDown={(event) => event.stopPropagation()}
+        onPointerMove={(event) => event.stopPropagation()}
+        onPointerUp={(event) => event.stopPropagation()}
+        onWheel={(event) => event.stopPropagation()}
+      >
         <div id="ram-selection-title-bar" data-element="window-title-bar" className="part-selector-drag-handle selector-title-bar">
           <div data-element="section-icon" className="selector-icon">🧠</div>
           <div data-element="section-heading">

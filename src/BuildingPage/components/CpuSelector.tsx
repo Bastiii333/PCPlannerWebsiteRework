@@ -47,7 +47,7 @@ function CpuSelector({
   return (
     <PartSelector
       windowId="cpu-selector-window" selectionId="cpu-selection" inputId="cpu-select"
-      title="Select your CPU" icon="⚡" defaultPosition={{ x: 16, y: 16 }}
+      title="Select your CPU" icon="⚡" defaultPosition={{ x: 1740, y: 1260 }}
       options={options}
       value={selected}
       onChange={(option) => {

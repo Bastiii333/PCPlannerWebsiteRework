@@ -53,7 +53,7 @@ function MotherboardSelector({
   return (
     <PartSelector
       windowId="motherboard-selector-window" selectionId="motherboard-selection" inputId="motherboard-select"
-      title="Select your motherboard" icon="🔧" defaultPosition={{ x: 16, y: 400 }}
+      title="Select your motherboard" icon="🔧" defaultPosition={{ x: 1740, y: 1660 }}
       options={options}
       value={selected}
       onChange={(option) => {

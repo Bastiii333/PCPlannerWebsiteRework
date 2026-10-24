@@ -30,7 +30,7 @@ function GpuSelector() {
   return (
     <PartSelector
       windowId="gpu-selector-window" selectionId="gpu-selection" inputId="gpu-select"
-      title="Select your GPU" icon="🎮" defaultPosition={{ x: 560, y: 16 }}
+      title="Select your GPU" icon="🎮" defaultPosition={{ x: 2300, y: 1260 }}
       options={gpu.options} value={gpu.selected} onChange={gpu.setSelected}
       isLoading={gpu.isLoading} isLoadingMore={gpu.isLoadingMore}
       hasMore={gpu.hasMore} onLoadMore={gpu.loadMore} error={gpu.error}
