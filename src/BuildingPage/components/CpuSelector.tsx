@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import PartSelector from './PartSelector'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
+import cpuIcon from '../../assets/cpu icon.jpg'
 
 type CpuSelectorProps = {
   selected: PartOption | null
@@ -47,7 +48,7 @@ function CpuSelector({
   return (
     <PartSelector
       windowId="cpu-selector-window" selectionId="cpu-selection" inputId="cpu-select"
-      title="Select your CPU" icon="⚡" defaultPosition={{ x: 1740, y: 1260 }}
+      title="Select your CPU" icon={cpuIcon} defaultPosition={{ x: 1740, y: 1260 }}
       options={options}
       value={selected}
       onChange={(option) => {

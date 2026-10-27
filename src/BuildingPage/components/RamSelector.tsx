@@ -4,6 +4,7 @@ import { Rnd } from 'react-rnd'
 import { selectStyles } from './selectorStyles'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
+import ramIcon from '../../assets/ram icon.jpg'
 
 type RamSelectorProps = {
   slotCount: number
@@ -75,7 +76,9 @@ function RamSelector({ slotCount, ramType }: RamSelectorProps) {
         onWheel={(event) => event.stopPropagation()}
       >
         <div id="ram-selection-title-bar" data-element="window-title-bar" className="part-selector-drag-handle selector-title-bar">
-          <div data-element="section-icon" className="selector-icon">🧠</div>
+          <div data-element="section-icon" className="selector-icon">
+            <img src={ramIcon} alt="" className="selector-icon-image" />
+          </div>
           <div data-element="section-heading">
             <p data-element="section-label" className="selector-kicker">Choose your memory</p>
             <h2 data-element="section-title" className="selector-title">
@@ -101,6 +104,7 @@ function RamSelector({ slotCount, ramType }: RamSelectorProps) {
                 isClearable
                 menuPortalTarget={document.body}
                 menuPosition="fixed"
+                onMenuOpen={ram.loadMore}
                 onMenuScrollToBottom={ram.loadMore}
                 noOptionsMessage={() =>
                   ram.error && options.length === 0

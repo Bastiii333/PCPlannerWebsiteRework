@@ -16,6 +16,10 @@
   @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-base;
 }
 
+@utility selector-icon-image {
+  @apply h-full w-full rounded-xl object-cover;
+}
+
 @utility selector-kicker {
   @apply text-xs font-medium text-violet-600;
 }

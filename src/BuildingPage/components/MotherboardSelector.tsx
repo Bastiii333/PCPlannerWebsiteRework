@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import PartSelector from './PartSelector'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
+import motherboardIcon from '../../assets/mobo icon.jpg'
 
 type MotherboardSelectorProps = {
   selected: PartOption | null
@@ -53,7 +54,7 @@ function MotherboardSelector({
   return (
     <PartSelector
       windowId="motherboard-selector-window" selectionId="motherboard-selection" inputId="motherboard-select"
-      title="Select your motherboard" icon="🔧" defaultPosition={{ x: 1740, y: 1660 }}
+      title="Select your motherboard" icon={motherboardIcon} defaultPosition={{ x: 1740, y: 1660 }}
       options={options}
       value={selected}
       onChange={(option) => {

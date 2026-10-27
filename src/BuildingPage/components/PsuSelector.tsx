@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import PartSelector from './PartSelector'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
+import psuIcon from '../../assets/psu icon.jpg'
 
 function mapPsu(psu: PartRecord, index: number): PartOption {
   const name = psu.metadata?.name ?? String(psu.name ?? psu.opendb_id ?? `PSU ${index + 1}`)
@@ -30,7 +31,7 @@ function PsuSelector() {
   return (
     <PartSelector
       windowId="psu-selector-window" selectionId="psu-selection" inputId="psu-select"
-      title="Select your PSU" icon="🔌" defaultPosition={{ x: 1160, y: 1460 }}
+      title="Select your PSU" icon={psuIcon} defaultPosition={{ x: 1160, y: 1460 }}
       options={psu.options} value={psu.selected} onChange={psu.setSelected}
       isLoading={psu.isLoading} isLoadingMore={psu.isLoadingMore}
       hasMore={psu.hasMore} onLoadMore={psu.loadMore} error={psu.error}

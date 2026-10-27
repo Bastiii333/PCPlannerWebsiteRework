@@ -51,7 +51,9 @@ function PartSelector({
         onWheel={(event) => event.stopPropagation()}
       >
         <div id={`${selectionId}-title-bar`} data-element="window-title-bar" className="part-selector-drag-handle selector-title-bar">
-          <div data-element="section-icon" className="selector-icon">{icon}</div>
+          <div data-element="section-icon" className="selector-icon">
+            <img src={icon} alt="" className="selector-icon-image" />
+          </div>
           <div data-element="section-heading">
             <p data-element="section-label" className="selector-kicker">Choose a part</p>
             <h2 data-element="section-title" className="selector-title">{title}</h2>
@@ -71,6 +73,7 @@ function PartSelector({
             isClearable
             menuPortalTarget={document.body}
             menuPosition="fixed"
+            onMenuOpen={onLoadMore}
             onMenuScrollToBottom={onLoadMore}
             noOptionsMessage={() =>
               error && options.length === 0
