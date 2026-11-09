@@ -21,18 +21,29 @@ function mapGpu(gpu: PartRecord, index: number): PartOption {
     details: details || 'GPU specifications unavailable',
     price: 'Price unavailable',
     badge: manufacturer,
+    powerDraw: typeof gpu.tdp === 'number' ? gpu.tdp : undefined,
   }
 }
 
-function GpuSelector() {
+type GpuSelectorProps = {
+  selected: PartOption | null
+  onSelectedChange: (option: PartOption | null) => void
+}
+
+function GpuSelector({ selected, onSelectedChange }: GpuSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapGpu(part, index), [])
   const gpu = usePaginatedParts<PartRecord>('http://localhost:3000/api/gpus', mapPart)
 
   return (
     <PartSelector
       windowId="gpu-selector-window" selectionId="gpu-selection" inputId="gpu-select"
-      title="Select your GPU" icon={gpuIcon} defaultPosition={{ x: 2300, y: 1260 }}
-      options={gpu.options} value={gpu.selected} onChange={gpu.setSelected}
+      title="Select your GPU" icon={gpuIcon}
+      options={gpu.options}
+      value={selected}
+      onChange={(option) => {
+        gpu.setSelected(option)
+        onSelectedChange(option)
+      }}
       isLoading={gpu.isLoading} isLoadingMore={gpu.isLoadingMore}
       hasMore={gpu.hasMore} onLoadMore={gpu.loadMore} error={gpu.error}
     />

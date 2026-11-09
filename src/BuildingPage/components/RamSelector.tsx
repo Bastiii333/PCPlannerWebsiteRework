@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import Select from 'react-select'
-import { Rnd } from 'react-rnd'
 import { selectStyles } from './selectorStyles'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
@@ -9,6 +8,8 @@ import ramIcon from '../../assets/ram icon.jpg'
 type RamSelectorProps = {
   slotCount: number
   ramType?: string
+  selected: Array<PartOption | null>
+  onSelectedChange: (options: Array<PartOption | null>) => void
 }
 
 function mapRam(ram: PartRecord, index: number): PartOption {
@@ -28,11 +29,12 @@ function mapRam(ram: PartRecord, index: number): PartOption {
     price: 'Price unavailable',
     badge: manufacturer,
     ramType: typeof ram.ram_type === 'string' ? ram.ram_type : undefined,
+    memoryCapacity: typeof ram.capacity === 'number' ? ram.capacity : undefined,
+    memorySpeed: typeof ram.speed === 'number' ? ram.speed : undefined,
   }
 }
 
-function RamSelector({ slotCount, ramType }: RamSelectorProps) {
-  const [selectedRam, setSelectedRam] = useState<Array<PartOption | null>>([])
+function RamSelector({ slotCount, ramType, selected, onSelectedChange }: RamSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapRam(part, index), [])
   const ram = usePaginatedParts<PartRecord>('http://localhost:3000/api/rams', mapPart)
   const options = useMemo(
@@ -43,11 +45,9 @@ function RamSelector({ slotCount, ramType }: RamSelectorProps) {
   )
 
   const updateSlot = (slotIndex: number, option: PartOption | null) => {
-    setSelectedRam((current) => {
-      const next = Array.from({ length: slotCount }, (_, index) => current[index] ?? null)
-      next[slotIndex] = option
-      return next
-    })
+    const next = Array.from({ length: slotCount }, (_, index) => selected[index] ?? null)
+    next[slotIndex] = option
+    onSelectedChange(next)
   }
 
   if (slotCount <= 0) {
@@ -55,13 +55,9 @@ function RamSelector({ slotCount, ramType }: RamSelectorProps) {
   }
 
   return (
-    <Rnd
+    <div
       id="ram-selector-window"
       data-component="RamSelectorWindow"
-      bounds="parent"
-      default={{ x: 2300, y: 1660, width: 'min(520px, calc(100vw - 32px))', height: 360 }}
-      enableResizing={false}
-      dragHandleClassName="part-selector-drag-handle"
       data-element="selector-window"
       className="part-selector-window"
     >
@@ -75,7 +71,7 @@ function RamSelector({ slotCount, ramType }: RamSelectorProps) {
         onPointerUp={(event) => event.stopPropagation()}
         onWheel={(event) => event.stopPropagation()}
       >
-        <div id="ram-selection-title-bar" data-element="window-title-bar" className="part-selector-drag-handle selector-title-bar">
+        <div id="ram-selection-title-bar" data-element="window-title-bar" className="selector-title-bar">
           <div data-element="section-icon" className="selector-icon">
             <img src={ramIcon} alt="" className="selector-icon-image" />
           </div>
@@ -96,7 +92,7 @@ function RamSelector({ slotCount, ramType }: RamSelectorProps) {
                 inputId={`ram-slot-${slotIndex}`}
                 aria-label={`RAM slot ${slotIndex + 1}`}
                 options={options}
-                value={selectedRam[slotIndex] ?? null}
+                value={selected[slotIndex] ?? null}
                 onChange={(option) => updateSlot(slotIndex, option)}
                 placeholder={ram.isLoading ? 'Loading RAM...' : 'Search and select RAM...'}
                 isLoading={ram.isLoading || ram.isLoadingMore}
@@ -129,7 +125,7 @@ function RamSelector({ slotCount, ramType }: RamSelectorProps) {
           {ram.error && <p role="alert" className="mt-3 text-sm text-red-600">{ram.error}. Make sure your backend is running.</p>}
         </div>
       </div>
-    </Rnd>
+    </div>
   )
 }
 

@@ -21,18 +21,29 @@ function mapPsu(psu: PartRecord, index: number): PartOption {
     details: details || 'PSU specifications unavailable',
     price: 'Price unavailable',
     badge: manufacturer,
+    wattage: typeof psu.wattage === 'number' ? psu.wattage : undefined,
   }
 }
 
-function PsuSelector() {
+type PsuSelectorProps = {
+  selected: PartOption | null
+  onSelectedChange: (option: PartOption | null) => void
+}
+
+function PsuSelector({ selected, onSelectedChange }: PsuSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapPsu(part, index), [])
   const psu = usePaginatedParts<PartRecord>('http://localhost:3000/api/psus', mapPart)
 
   return (
     <PartSelector
       windowId="psu-selector-window" selectionId="psu-selection" inputId="psu-select"
-      title="Select your PSU" icon={psuIcon} defaultPosition={{ x: 1160, y: 1460 }}
-      options={psu.options} value={psu.selected} onChange={psu.setSelected}
+      title="Select your PSU" icon={psuIcon}
+      options={psu.options}
+      value={selected}
+      onChange={(option) => {
+        psu.setSelected(option)
+        onSelectedChange(option)
+      }}
       isLoading={psu.isLoading} isLoadingMore={psu.isLoadingMore}
       hasMore={psu.hasMore} onLoadMore={psu.loadMore} error={psu.error}
     />

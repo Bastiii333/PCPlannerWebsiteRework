@@ -1,5 +1,4 @@
 import Select from 'react-select'
-import { Rnd } from 'react-rnd'
 import type { PartOption } from '../types/parts'
 import { selectStyles } from './selectorStyles'
 
@@ -17,26 +16,16 @@ type PartSelectorProps = {
   hasMore: boolean
   onLoadMore: () => void
   error: string | null
-  defaultPosition?: { x: number; y: number }
 }
 
 function PartSelector({
   windowId, selectionId, inputId, title, icon, options, value, onChange,
-  isLoading, isLoadingMore, hasMore, onLoadMore, error, defaultPosition,
+  isLoading, isLoadingMore, hasMore, onLoadMore, error,
 }: PartSelectorProps) {
   return (
-    <Rnd
+    <div
       id={windowId}
       data-component="PartSelectorWindow"
-      bounds="parent"
-      default={{
-        x: defaultPosition?.x ?? 16,
-        y: defaultPosition?.y ?? 16,
-        width: 'min(520px, calc(100vw - 32px))',
-        height: 360,
-      }}
-      enableResizing={false}
-      dragHandleClassName="part-selector-drag-handle"
       data-element="selector-window"
       className="part-selector-window"
     >
@@ -50,7 +39,7 @@ function PartSelector({
         onPointerUp={(event) => event.stopPropagation()}
         onWheel={(event) => event.stopPropagation()}
       >
-        <div id={`${selectionId}-title-bar`} data-element="window-title-bar" className="part-selector-drag-handle selector-title-bar">
+        <div id={`${selectionId}-title-bar`} data-element="window-title-bar" className="selector-title-bar">
           <div data-element="section-icon" className="selector-icon">
             <img src={icon} alt="" className="selector-icon-image" />
           </div>
@@ -97,7 +86,7 @@ function PartSelector({
           {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}. Make sure your backend is running.</p>}
         </div>
       </div>
-    </Rnd>
+    </div>
   )
 }
 

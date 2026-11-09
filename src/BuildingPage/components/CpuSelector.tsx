@@ -23,6 +23,19 @@ function mapCpu(cpu: PartRecord, index: number): PartOption {
       ? `${String(cpu.specifications.tdp)}W TDP`
       : undefined,
   ].filter(Boolean).join(' • ')
+  const specifications = cpu.specifications && typeof cpu.specifications === 'object'
+    ? cpu.specifications as Record<string, unknown>
+    : undefined
+  const memory = specifications?.memory && typeof specifications.memory === 'object'
+    ? specifications.memory as Record<string, unknown>
+    : undefined
+  const integratedGraphics = specifications?.integratedGraphics
+    && typeof specifications.integratedGraphics === 'object'
+    ? specifications.integratedGraphics as Record<string, unknown>
+    : undefined
+  const supportedRamTypes = Array.isArray(memory?.types)
+    ? memory.types.filter((type): type is string => typeof type === 'string')
+    : undefined
 
   return {
     value: cpu.opendb_id ?? `${name}-${index}`,
@@ -31,6 +44,10 @@ function mapCpu(cpu: PartRecord, index: number): PartOption {
     price: 'Price unavailable',
     badge: manufacturer,
     socket: typeof cpu.socket === 'string' ? cpu.socket : undefined,
+    powerDraw: typeof specifications?.tdp === 'number' ? specifications.tdp : undefined,
+    maxMemoryCapacity: typeof memory?.maxSupport === 'number' ? memory.maxSupport : undefined,
+    supportedRamTypes,
+    hasIntegratedGraphics: integratedGraphics?.model !== undefined && integratedGraphics.model !== 'None',
   }
 }
 
@@ -48,7 +65,7 @@ function CpuSelector({
   return (
     <PartSelector
       windowId="cpu-selector-window" selectionId="cpu-selection" inputId="cpu-select"
-      title="Select your CPU" icon={cpuIcon} defaultPosition={{ x: 1740, y: 1260 }}
+      title="Select your CPU" icon={cpuIcon}
       options={options}
       value={selected}
       onChange={(option) => {

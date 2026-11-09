@@ -5,11 +5,11 @@
 }
 
 @utility selector-card {
-  @apply flex min-w-[500px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm;
+  @apply flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm;
 }
 
 @utility selector-title-bar {
-  @apply flex shrink-0 cursor-move items-center gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3;
+  @apply flex shrink-0 items-center gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3;
 }
 
 @utility selector-icon {

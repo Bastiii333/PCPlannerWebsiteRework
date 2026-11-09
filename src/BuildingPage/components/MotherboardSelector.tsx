@@ -20,12 +20,25 @@ function mapMotherboard(board: PartRecord, index: number): PartOption {
     && typeof board.memory.slots === 'number'
     ? board.memory.slots
     : undefined
+  const m2Slots = Array.isArray(board.m2_slots) ? board.m2_slots.length : undefined
+  const storageDevices = typeof board.storage_devices === 'object'
+    && board.storage_devices !== null
+    ? board.storage_devices as Record<string, unknown>
+    : undefined
+  const sataPorts = storageDevices
+    ? ['sata_6_gb_s', 'sata_3_gb_s'].reduce((total, key) => {
+      const count = storageDevices[key]
+      return total + (typeof count === 'number' ? count : 0)
+    }, 0)
+    : undefined
   const details = [
     manufacturer,
     typeof board.socket === 'string' ? board.socket : undefined,
     typeof board.form_factor === 'string' ? board.form_factor : undefined,
     typeof board.chipset === 'string' ? board.chipset : undefined,
     memory,
+    m2Slots !== undefined ? `${m2Slots} M.2 slots` : undefined,
+    sataPorts !== undefined ? `${sataPorts} SATA ports` : undefined,
   ].filter(Boolean).join(' • ')
 
   return {
@@ -37,6 +50,12 @@ function mapMotherboard(board: PartRecord, index: number): PartOption {
     socket: typeof board.socket === 'string' ? board.socket : undefined,
     ramType: memory,
     ramSlots,
+    m2Slots,
+    sataPorts,
+    maxMemoryCapacity: typeof board.memory === 'object' && board.memory !== null
+      && 'max' in board.memory && typeof board.memory.max === 'number'
+      ? board.memory.max
+      : undefined,
   }
 }
 
@@ -54,7 +73,7 @@ function MotherboardSelector({
   return (
     <PartSelector
       windowId="motherboard-selector-window" selectionId="motherboard-selection" inputId="motherboard-select"
-      title="Select your motherboard" icon={motherboardIcon} defaultPosition={{ x: 1740, y: 1660 }}
+      title="Select your motherboard" icon={motherboardIcon}
       options={options}
       value={selected}
       onChange={(option) => {
