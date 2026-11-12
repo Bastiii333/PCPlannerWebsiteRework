@@ -10,9 +10,12 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-PCPlannerBackend/
-PCPlannerBackend/
-*.local
+# Backend dependencies and generated output
+PCPlannerBackend/node_modules/
+PCPlannerBackend/dist/
+PCPlannerBackend/.env
+PCPlannerBackend/.env.*
+!PCPlannerBackend/.env.example
 
 # Editor directories and files
 .vscode/*

@@ -58,9 +58,10 @@ function StorageSelect({
   onChange,
   isLoading,
   isLoadingMore,
-  hasMore,
   onLoadMore,
   error,
+  search,
+  onSearchChange,
   storageType,
   onStorageTypeChange,
 }: {
@@ -72,24 +73,26 @@ function StorageSelect({
   onChange: (option: PartOption | null) => void
   isLoading: boolean
   isLoadingMore: boolean
-  hasMore: boolean
   onLoadMore: () => void
   error: string | null
+  search: string
+  onSearchChange: (value: string) => void
   storageType: StorageType
   onStorageTypeChange?: (type: StorageType) => void
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-        <img src={icon} alt="" className="h-7 w-7 rounded-lg object-cover" />
-        <label htmlFor={inputId} className="text-sm font-semibold text-slate-700">{label}</label>
+    <div data-element="storage-select" className="rounded-xl border border-slate-200 bg-white p-3">
+      <div data-element="storage-select-header" className="mb-2 flex items-center justify-between gap-2">
+        <div data-element="storage-select-label" className="flex items-center gap-2">
+        <img data-element="storage-select-icon" src={icon} alt="" className="h-7 w-7 rounded-lg object-cover" />
+        <label data-element="storage-select-label-text" htmlFor={inputId} className="text-sm font-semibold text-slate-700">{label}</label>
         </div>
         {onStorageTypeChange && (
-          <div className="flex rounded-lg bg-slate-100 p-0.5">
+          <div data-element="storage-type-toggle" className="flex rounded-lg bg-slate-100 p-0.5">
             {(['ssd', 'hdd'] as const).map((type) => (
               <button
                 key={type}
+                data-element="storage-type-option"
                 type="button"
                 className={`rounded-md px-2 py-1 text-[10px] font-semibold uppercase ${
                   storageType === type ? 'bg-white text-violet-700 shadow-sm' : 'text-slate-500'
@@ -109,6 +112,12 @@ function StorageSelect({
         options={options}
         value={value}
         onChange={onChange}
+        inputValue={search}
+        onInputChange={(value, actionMeta) => {
+          if (actionMeta.action === 'input-change') {
+            onSearchChange(value)
+          }
+        }}
         placeholder={isLoading ? 'Loading storage...' : 'Search and select a drive...'}
         isLoading={isLoading || isLoadingMore}
         isDisabled={(isLoading && options.length === 0) || (Boolean(error) && options.length === 0)}
@@ -120,11 +129,11 @@ function StorageSelect({
         noOptionsMessage={() =>
           error && options.length === 0
             ? 'Unable to load storage'
-            : hasMore ? 'Scroll to load more storage' : 'No matching drives found'
+            : 'No matching drives found'
         }
         formatOptionLabel={(option) => (
-          <div className="selector-option">
-            <div>
+          <div data-element="storage-option" className="selector-option">
+            <div data-element="storage-option-content">
               <p className="selector-option-label">{option.label}</p>
               <p className="selector-option-details">{option.details}</p>
             </div>
@@ -175,14 +184,14 @@ function StorageSelector({
       data-element="storage-selector"
       className="selector-card p-4"
     >
-      <div className="mb-4">
+      <div data-element="storage-selector-header" className="mb-4">
         <p className="selector-kicker">Choose your drives</p>
         <h2 className="selector-title">Storage</h2>
         <p className="mt-1 text-xs leading-5 text-slate-500">
           NVMe drives use M.2 slots. SSDs and hard drives share the available SATA ports.
         </p>
       </div>
-      <div className="grid gap-3 xl:grid-cols-2">
+      <div data-element="storage-selector-options" className="grid gap-3 xl:grid-cols-2">
         {Array.from({ length: m2Slots }, (_, index) => (
           <StorageSelect
             key={`nvme-${index}`}
@@ -194,9 +203,10 @@ function StorageSelector({
             onChange={(part) => updateSelection(index, 'nvme', part)}
             isLoading={storage.isLoading}
             isLoadingMore={storage.isLoadingMore}
-            hasMore={storage.hasMore}
             onLoadMore={storage.loadMore}
             error={storage.error}
+            search={storage.search}
+            onSearchChange={storage.setSearch}
             storageType="nvme"
           />
         ))}
@@ -216,14 +226,15 @@ function StorageSelector({
               onStorageTypeChange={(type) => updateSelection(selectionIndex, type, null)}
               isLoading={storage.isLoading}
               isLoadingMore={storage.isLoadingMore}
-              hasMore={storage.hasMore}
               onLoadMore={storage.loadMore}
               error={storage.error}
+              search={storage.search}
+              onSearchChange={storage.setSearch}
             />
           )
         })}
       </div>
-      {storage.error && <p role="alert" className="mt-3 text-sm text-red-600">{storage.error}. Make sure your backend is running.</p>}
+      {storage.error && <p data-element="storage-error" role="alert" className="mt-3 text-sm text-red-600">{storage.error}. Make sure your backend is running.</p>}
     </section>
   )
 }

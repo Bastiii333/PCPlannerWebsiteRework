@@ -172,14 +172,23 @@ export function validateBuild(build: BuildSelection): BuildIssue[] {
     }
   }
 
-  if (build.cpu && build.gpu && build.cpu.powerDraw !== undefined && build.gpu.powerDraw !== undefined) {
-    const ratio = build.gpu.powerDraw / Math.max(build.cpu.powerDraw, 1)
-    if (ratio >= 4) {
+  if (build.cpu && build.gpu
+    && build.cpu.benchmarkScore !== undefined && build.gpu.benchmarkScore !== undefined) {
+    const ratio = build.gpu.benchmarkScore / Math.max(build.cpu.benchmarkScore, 1)
+    if (ratio >= 1.5) {
       issues.push(issue(
         'performance-balance',
         'warning',
-        'Potential CPU/GPU performance imbalance',
-        'This GPU is substantially higher power than the CPU. Performance may be CPU-limited in high-refresh or CPU-heavy workloads; verify with workload-specific benchmarks.',
+        'CPU/GPU performance may be unbalanced',
+        'The estimated performance of the selected CPU and GPU differs significantly. This may cause a bottleneck depending on the resolution, target FPS, and workload.',
+        ['CPU', 'GPU']
+      ))
+    } else if (ratio <= 0.67) {
+      issues.push(issue(
+        'performance-balance',
+        'warning',
+        'CPU/GPU performance may be unbalanced',
+        'The estimated performance of the selected CPU and GPU differs significantly. This may cause a bottleneck depending on the resolution, target FPS, and workload.',
         ['CPU', 'GPU']
       ))
     }

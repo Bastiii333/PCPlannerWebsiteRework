@@ -16,11 +16,14 @@ type PartSelectorProps = {
   hasMore: boolean
   onLoadMore: () => void
   error: string | null
+  search: string
+  onSearchChange: (value: string) => void
 }
 
 function PartSelector({
   windowId, selectionId, inputId, title, icon, options, value, onChange,
-  isLoading, isLoadingMore, hasMore, onLoadMore, error,
+  isLoading, isLoadingMore, onLoadMore, error,
+  search, onSearchChange,
 }: PartSelectorProps) {
   return (
     <div
@@ -55,7 +58,16 @@ function PartSelector({
             aria-label={title}
             options={options}
             value={value}
-            onChange={onChange}
+            onChange={(option) => {
+              onSearchChange('')
+              onChange(option)
+            }}
+            inputValue={search}
+            onInputChange={(value, actionMeta) => {
+              if (actionMeta.action === 'input-change') {
+                onSearchChange(value)
+              }
+            }}
             placeholder={isLoading ? 'Loading parts...' : `Search and select ${title.toLowerCase()}...`}
             isLoading={isLoading || isLoadingMore}
             isDisabled={(isLoading && options.length === 0) || (Boolean(error) && options.length === 0)}
@@ -67,11 +79,11 @@ function PartSelector({
             noOptionsMessage={() =>
               error && options.length === 0
                 ? 'Unable to load parts'
-                : hasMore ? 'Scroll to load more parts' : 'No matching parts found'
+                : 'No matching parts found'
             }
             formatOptionLabel={(option) => (
               <div data-element="part-option" className="selector-option">
-                <div>
+                <div data-element="option-content">
                   <p data-element="option-label" className="selector-option-label">{option.label}</p>
                   <p data-element="option-details" className="selector-option-details">{option.details}</p>
                 </div>
@@ -83,7 +95,7 @@ function PartSelector({
             )}
             styles={selectStyles}
           />
-          {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}. Make sure your backend is running.</p>}
+          {error && <p data-element="selector-error" role="alert" className="mt-3 text-sm text-red-600">{error}. Make sure your backend is running.</p>}
         </div>
       </div>
     </div>

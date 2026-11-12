@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import PartSelector from './PartSelector'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
+import { estimateGpuPerformanceScore } from '../validation/performanceScore'
 import gpuIcon from '../../assets/gpu icon.jpg'
 
 function mapGpu(gpu: PartRecord, index: number): PartOption {
@@ -22,6 +23,9 @@ function mapGpu(gpu: PartRecord, index: number): PartOption {
     price: 'Price unavailable',
     badge: manufacturer,
     powerDraw: typeof gpu.tdp === 'number' ? gpu.tdp : undefined,
+    benchmarkScore: typeof gpu.benchmarkScore === 'number'
+      ? gpu.benchmarkScore
+      : estimateGpuPerformanceScore(gpu),
   }
 }
 
@@ -46,6 +50,7 @@ function GpuSelector({ selected, onSelectedChange }: GpuSelectorProps) {
       }}
       isLoading={gpu.isLoading} isLoadingMore={gpu.isLoadingMore}
       hasMore={gpu.hasMore} onLoadMore={gpu.loadMore} error={gpu.error}
+      search={gpu.search} onSearchChange={gpu.setSearch}
     />
   )
 }

@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import PartSelector from './PartSelector'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
+import { estimateCpuPerformanceScore } from '../validation/performanceScore'
 import cpuIcon from '../../assets/cpu icon.jpg'
 
 type CpuSelectorProps = {
@@ -36,6 +37,9 @@ function mapCpu(cpu: PartRecord, index: number): PartOption {
   const supportedRamTypes = Array.isArray(memory?.types)
     ? memory.types.filter((type): type is string => typeof type === 'string')
     : undefined
+  const benchmarkScore = typeof cpu.benchmarkScore === 'number'
+    ? cpu.benchmarkScore
+    : estimateCpuPerformanceScore(cpu)
 
   return {
     value: cpu.opendb_id ?? `${name}-${index}`,
@@ -48,6 +52,7 @@ function mapCpu(cpu: PartRecord, index: number): PartOption {
     maxMemoryCapacity: typeof memory?.maxSupport === 'number' ? memory.maxSupport : undefined,
     supportedRamTypes,
     hasIntegratedGraphics: integratedGraphics?.model !== undefined && integratedGraphics.model !== 'None',
+    benchmarkScore,
   }
 }
 
@@ -74,6 +79,7 @@ function CpuSelector({
       }}
       isLoading={cpu.isLoading} isLoadingMore={cpu.isLoadingMore}
       hasMore={cpu.hasMore} onLoadMore={cpu.loadMore} error={cpu.error}
+      search={cpu.search} onSearchChange={cpu.setSearch}
     />
   )
 }

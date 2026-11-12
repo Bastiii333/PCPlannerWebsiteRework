@@ -84,8 +84,8 @@ function RamSelector({ slotCount, ramType, selected, onSelectedChange }: RamSele
         </div>
         <div id="ram-selection-content" data-element="selector-content" className="selector-content">
           {Array.from({ length: slotCount }, (_, slotIndex) => (
-            <div key={`ram-slot-${slotIndex}`} className="mb-3">
-              <label htmlFor={`ram-slot-${slotIndex}`} className="selector-label">
+            <div key={`ram-slot-${slotIndex}`} data-element="ram-slot" className="mb-3">
+              <label data-element="ram-slot-label" htmlFor={`ram-slot-${slotIndex}`} className="selector-label">
                 RAM slot {slotIndex + 1}
               </label>
               <Select<PartOption, false>
@@ -94,6 +94,12 @@ function RamSelector({ slotCount, ramType, selected, onSelectedChange }: RamSele
                 options={options}
                 value={selected[slotIndex] ?? null}
                 onChange={(option) => updateSlot(slotIndex, option)}
+                inputValue={ram.search}
+                onInputChange={(value, actionMeta) => {
+                  if (actionMeta.action === 'input-change') {
+                    ram.setSearch(value)
+                  }
+                }}
                 placeholder={ram.isLoading ? 'Loading RAM...' : 'Search and select RAM...'}
                 isLoading={ram.isLoading || ram.isLoadingMore}
                 isDisabled={Boolean(ram.error) && options.length === 0}
@@ -105,13 +111,11 @@ function RamSelector({ slotCount, ramType, selected, onSelectedChange }: RamSele
                 noOptionsMessage={() =>
                   ram.error && options.length === 0
                     ? 'Unable to load RAM'
-                    : ram.hasMore
-                      ? 'Scroll to load more RAM'
-                      : 'No compatible RAM found'
+                    : 'No compatible RAM found'
                 }
                 formatOptionLabel={(option) => (
-                  <div className="selector-option">
-                    <div>
+                  <div data-element="ram-option" className="selector-option">
+                    <div data-element="ram-option-content">
                       <p className="selector-option-label">{option.label}</p>
                       <p className="selector-option-details">{option.details}</p>
                     </div>
@@ -122,7 +126,7 @@ function RamSelector({ slotCount, ramType, selected, onSelectedChange }: RamSele
               />
             </div>
           ))}
-          {ram.error && <p role="alert" className="mt-3 text-sm text-red-600">{ram.error}. Make sure your backend is running.</p>}
+          {ram.error && <p data-element="ram-error" role="alert" className="mt-3 text-sm text-red-600">{ram.error}. Make sure your backend is running.</p>}
         </div>
       </div>
     </div>

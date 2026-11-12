@@ -82,6 +82,7 @@ function MotherboardSelector({
       }}
       isLoading={motherboard.isLoading} isLoadingMore={motherboard.isLoadingMore}
       hasMore={motherboard.hasMore} onLoadMore={motherboard.loadMore} error={motherboard.error}
+      search={motherboard.search} onSearchChange={motherboard.setSearch}
     />
   )
 }

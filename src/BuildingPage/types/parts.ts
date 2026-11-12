@@ -23,6 +23,7 @@ export type PartOption = {
   maxMemorySpeed?: number
   supportedRamTypes?: string[]
   hasIntegratedGraphics?: boolean
+  benchmarkScore?: number
 }
 
 export type PartRecord = {

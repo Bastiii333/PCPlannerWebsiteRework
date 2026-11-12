@@ -46,6 +46,7 @@ function PsuSelector({ selected, onSelectedChange }: PsuSelectorProps) {
       }}
       isLoading={psu.isLoading} isLoadingMore={psu.isLoadingMore}
       hasMore={psu.hasMore} onLoadMore={psu.loadMore} error={psu.error}
+      search={psu.search} onSearchChange={psu.setSearch}
     />
   )
 }
