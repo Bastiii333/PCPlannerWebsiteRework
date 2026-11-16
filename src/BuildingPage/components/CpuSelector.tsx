@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import PartSelector from './PartSelector'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
@@ -9,6 +9,7 @@ type CpuSelectorProps = {
   selected: PartOption | null
   onSelectedChange: (option: PartOption | null) => void
   compatibleSocket?: string
+  onOptionsChange?: (options: PartOption[]) => void
 }
 
 function mapCpu(cpu: PartRecord, index: number): PartOption {
@@ -60,12 +61,20 @@ function CpuSelector({
   selected,
   onSelectedChange,
   compatibleSocket,
+  onOptionsChange,
 }: CpuSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapCpu(part, index), [])
   const cpu = usePaginatedParts<PartRecord>('http://localhost:3000/api/cpus', mapPart)
-  const options = compatibleSocket
-    ? cpu.options.filter((option) => option.socket === compatibleSocket)
-    : cpu.options
+  const options = useMemo(
+    () => compatibleSocket
+      ? cpu.options.filter((option) => option.socket === compatibleSocket)
+      : cpu.options,
+    [compatibleSocket, cpu.options]
+  )
+
+  useEffect(() => {
+    onOptionsChange?.(options)
+  }, [onOptionsChange, options])
 
   return (
     <PartSelector

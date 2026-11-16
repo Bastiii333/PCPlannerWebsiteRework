@@ -21,7 +21,7 @@ type UsePaginatedPartsResult = {
 }
 
 const DEFAULT_PAGE_SIZE = 50
-const SEARCH_DEBOUNCE_MS = 450
+const SEARCH_DEBOUNCE_MS = 2000
 const MIN_SERVER_SEARCH_LENGTH = 2
 
 export function usePaginatedParts<T>(
@@ -40,6 +40,7 @@ export function usePaginatedParts<T>(
   const loadingRef = useRef(false)
   const controllerRef = useRef<AbortController | null>(null)
   const requestIdRef = useRef(0)
+  const hasLoadedRef = useRef(false)
 
   const loadPage = useCallback(async (offset: number, append: boolean) => {
     if (loadingRef.current) return
@@ -54,8 +55,9 @@ export function usePaginatedParts<T>(
     const serverSearch =
       trimmedSearch.length >= MIN_SERVER_SEARCH_LENGTH ? trimmedSearch : ''
     const requestLimit = serverSearch ? 3 : pageSize
+    const isInitialLoad = !append && !hasLoadedRef.current
     setError(null)
-    if (append) setIsLoadingMore(true)
+    if (append || !isInitialLoad) setIsLoadingMore(true)
     else setIsLoading(true)
 
     try {
@@ -76,6 +78,7 @@ export function usePaginatedParts<T>(
       setOptions((currentOptions) =>
         append ? [...currentOptions, ...pageOptions] : pageOptions
       )
+      hasLoadedRef.current = true
       setHasMore(result.hasMore)
       setNextOffset(offset + result.limit)
     } catch (requestError) {
@@ -90,7 +93,7 @@ export function usePaginatedParts<T>(
       if (requestId === requestIdRef.current) {
         loadingRef.current = false
         controllerRef.current = null
-        if (append) setIsLoadingMore(false)
+        if (append || !isInitialLoad) setIsLoadingMore(false)
         else setIsLoading(false)
       }
     }
@@ -98,7 +101,6 @@ export function usePaginatedParts<T>(
 
   useEffect(() => {
     const debounce = window.setTimeout(() => {
-      setOptions([])
       setHasMore(true)
       setNextOffset(0)
       void loadPage(0, false)

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import CpuSelector from './components/CpuSelector'
 import GpuSelector from './components/GpuSelector'
 import MotherboardSelector from './components/MotherboardSelector'
@@ -9,6 +9,7 @@ import type { PartOption } from './types/parts'
 import { validateBuild, type BuildIssueSeverity } from './validation/buildValidator'
 import {
   estimateBottleneck,
+  recommendCpus,
   type BottleneckResolution,
   type BottleneckWorkload,
 } from './validation/bottleneckEstimator'
@@ -23,6 +24,7 @@ function BuildingPage() {
   const [resolution, setResolution] = useState<BottleneckResolution>('1440p')
   const [workload, setWorkload] = useState<BottleneckWorkload>('modern-games')
   const [targetFps, setTargetFps] = useState(144)
+  const [availableCpus, setAvailableCpus] = useState<PartOption[]>([])
 
   const handleMotherboardChange = (option: PartOption | null) => {
     setSelectedMotherboard(option)
@@ -69,6 +71,30 @@ function BuildingPage() {
     workload,
     targetFps,
   })
+  const handleCpuOptionsChange = useCallback((options: PartOption[]) => {
+    setAvailableCpus(options)
+  }, [])
+  const cpuRecommendations = useMemo(
+    () => bottleneck.status === 'cpu-limited'
+      ? recommendCpus(
+        availableCpus,
+        selectedGpu,
+        { resolution, workload, targetFps },
+        selectedMotherboard?.socket,
+        selectedCpu
+      )
+      : [],
+    [
+      availableCpus,
+      bottleneck.status,
+      resolution,
+      selectedCpu,
+      selectedGpu,
+      selectedMotherboard?.socket,
+      targetFps,
+      workload,
+    ]
+  )
   const displayedBuildIssues = useMemo(() => {
     if (bottleneck.status === 'balanced' || bottleneck.status === 'insufficient-data') {
       return buildIssues
@@ -147,6 +173,7 @@ function BuildingPage() {
                 selected={selectedCpu}
                 onSelectedChange={setSelectedCpu}
                 compatibleSocket={selectedMotherboard?.socket}
+                onOptionsChange={handleCpuOptionsChange}
               />
               <MotherboardSelector
                 selected={selectedMotherboard}
@@ -177,7 +204,7 @@ function BuildingPage() {
             id="build-summary"
             data-component="BuildSummaryCard"
             data-element="build-summary-card"
-            className="min-w-0 lg:sticky lg:top-8"
+            className="min-w-0"
           >
             <div data-element="build-summary-content" className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <div data-element="build-summary-header" className="border-b border-slate-100 bg-slate-50 px-5 py-5">
@@ -224,6 +251,28 @@ function BuildingPage() {
                     </li>
                   ))}
                 </ul>
+                {cpuRecommendations.length > 0 && (
+                  <div
+                    data-element="cpu-recommendations"
+                    className="mt-4 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3"
+                  >
+                    <p data-element="cpu-recommendations-title" className="text-xs font-semibold text-violet-900">
+                      Recommended compatible CPUs
+                    </p>
+                    <ul className="mt-2 space-y-2">
+                      {cpuRecommendations.map((cpu) => (
+                        <li key={cpu.value} data-element="cpu-recommendation">
+                          <p data-element="cpu-recommendation-name" className="text-xs font-semibold text-slate-800">
+                            {cpu.label}
+                          </p>
+                          <p data-element="cpu-recommendation-reason" className="mt-0.5 text-xs leading-5 text-slate-600">
+                            {cpu.recommendationReason}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
               <div data-element="bottleneck-section" className="border-b border-slate-100 p-5">
                 <h3 data-element="bottleneck-title-label" className="text-sm font-bold text-slate-800">Bottleneck estimate</h3>
