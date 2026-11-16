@@ -18,6 +18,8 @@ type UsePaginatedPartsResult = {
   setSelected: (option: PartOption | null) => void
   search: string
   setSearch: (value: string) => void
+  startAutoLoad: () => void
+  stopAutoLoad: () => void
 }
 
 const DEFAULT_PAGE_SIZE = 50
@@ -41,6 +43,9 @@ export function usePaginatedParts<T>(
   const controllerRef = useRef<AbortController | null>(null)
   const requestIdRef = useRef(0)
   const hasLoadedRef = useRef(false)
+  const queuedLoadMoreRef = useRef(false)
+  const autoLoadTimerRef = useRef<number | null>(null)
+  const loadMoreRef = useRef<() => void>(() => {})
 
   const loadPage = useCallback(async (offset: number, append: boolean) => {
     if (loadingRef.current) return
@@ -100,6 +105,13 @@ export function usePaginatedParts<T>(
   }, [endpoint, mapPart, pageSize, search])
 
   useEffect(() => {
+    if (queuedLoadMoreRef.current && !isLoading && !isLoadingMore && hasMore) {
+      queuedLoadMoreRef.current = false
+      void loadPage(nextOffset, true)
+    }
+  }, [hasMore, isLoading, isLoadingMore, loadPage, nextOffset])
+
+  useEffect(() => {
     const debounce = window.setTimeout(() => {
       setHasMore(true)
       setNextOffset(0)
@@ -112,14 +124,40 @@ export function usePaginatedParts<T>(
       requestIdRef.current += 1
       loadingRef.current = false
       controllerRef.current = null
+      queuedLoadMoreRef.current = false
       setIsLoading(false)
       setIsLoadingMore(false)
     }
   }, [loadPage])
 
   const loadMore = useCallback(() => {
-    if (hasMore && !loadingRef.current) void loadPage(nextOffset, true)
+    if (!hasMore) return
+    if (loadingRef.current) {
+      queuedLoadMoreRef.current = true
+      return
+    }
+    void loadPage(nextOffset, true)
   }, [hasMore, loadPage, nextOffset])
+  useEffect(() => {
+    loadMoreRef.current = loadMore
+  }, [loadMore])
+
+  const stopAutoLoad = useCallback(() => {
+    if (autoLoadTimerRef.current !== null) {
+      window.clearInterval(autoLoadTimerRef.current)
+      autoLoadTimerRef.current = null
+    }
+  }, [])
+
+  const startAutoLoad = useCallback(() => {
+    stopAutoLoad()
+    loadMoreRef.current()
+    autoLoadTimerRef.current = window.setInterval(() => {
+      loadMoreRef.current()
+    }, 350)
+  }, [stopAutoLoad])
+
+  useEffect(() => stopAutoLoad, [stopAutoLoad])
 
   return {
     options,
@@ -132,5 +170,7 @@ export function usePaginatedParts<T>(
     setSelected,
     search,
     setSearch,
+    startAutoLoad,
+    stopAutoLoad,
   }
 }

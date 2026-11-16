@@ -76,3 +76,21 @@ export default defineConfig([
 ])
 
 ```
+
+## Part catalog sync
+
+Run the backend sync from the repository root:
+
+```powershell
+Push-Location PCPlannerBackend
+npm run sync:parts
+Pop-Location
+```
+
+CPU, motherboard, PSU, RAM, and storage data are synced from BuildCores Open DB.
+CPU records are non-destructively enriched from NucleusAPI when model names or part
+numbers match; existing CPU values are retained.
+GPU data is replaced with the NVIDIA, AMD, and Intel catalogs from
+[RightNow GPU Database](https://github.com/RightNow-AI/RightNow-GPU-Database).
+The sync requires the backend Supabase server credentials and deletes existing GPU
+rows before importing the replacement catalog.

@@ -59,6 +59,8 @@ function StorageSelect({
   isLoading,
   isLoadingMore,
   onLoadMore,
+  onMenuOpen,
+  onMenuClose,
   error,
   search,
   onSearchChange,
@@ -74,6 +76,8 @@ function StorageSelect({
   isLoading: boolean
   isLoadingMore: boolean
   onLoadMore: () => void
+  onMenuOpen: () => void
+  onMenuClose: () => void
   error: string | null
   search: string
   onSearchChange: (value: string) => void
@@ -124,7 +128,8 @@ function StorageSelect({
         isClearable
         menuPortalTarget={document.body}
         menuPosition="fixed"
-        onMenuOpen={onLoadMore}
+        onMenuOpen={onMenuOpen}
+        onMenuClose={onMenuClose}
         onMenuScrollToBottom={onLoadMore}
         noOptionsMessage={() =>
           error && options.length === 0
@@ -204,6 +209,8 @@ function StorageSelector({
             isLoading={storage.isLoading}
             isLoadingMore={storage.isLoadingMore}
             onLoadMore={storage.loadMore}
+            onMenuOpen={storage.startAutoLoad}
+            onMenuClose={storage.stopAutoLoad}
             error={storage.error}
             search={storage.search}
             onSearchChange={storage.setSearch}
@@ -227,6 +234,8 @@ function StorageSelector({
               isLoading={storage.isLoading}
               isLoadingMore={storage.isLoadingMore}
               onLoadMore={storage.loadMore}
+              onMenuOpen={storage.startAutoLoad}
+              onMenuClose={storage.stopAutoLoad}
               error={storage.error}
               search={storage.search}
               onSearchChange={storage.setSearch}

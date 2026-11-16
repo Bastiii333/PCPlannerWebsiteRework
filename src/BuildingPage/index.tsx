@@ -10,8 +10,7 @@ import { validateBuild, type BuildIssueSeverity } from './validation/buildValida
 import {
   estimateBottleneck,
   recommendCpus,
-  type BottleneckResolution,
-  type BottleneckWorkload,
+  recommendGpus,
 } from './validation/bottleneckEstimator'
 
 function BuildingPage() {
@@ -21,10 +20,8 @@ function BuildingPage() {
   const [selectedRam, setSelectedRam] = useState<Array<PartOption | null>>([])
   const [selectedPsu, setSelectedPsu] = useState<PartOption | null>(null)
   const [selectedStorage, setSelectedStorage] = useState<StorageSelection[]>([])
-  const [resolution, setResolution] = useState<BottleneckResolution>('1440p')
-  const [workload, setWorkload] = useState<BottleneckWorkload>('modern-games')
-  const [targetFps, setTargetFps] = useState(144)
   const [availableCpus, setAvailableCpus] = useState<PartOption[]>([])
+  const [availableGpus, setAvailableGpus] = useState<PartOption[]>([])
 
   const handleMotherboardChange = (option: PartOption | null) => {
     setSelectedMotherboard(option)
@@ -45,7 +42,6 @@ function BuildingPage() {
     },
     []
   )
-
   const summaryParts: Array<[string, PartOption | null]> = [
     ['CPU', selectedCpu],
     ['GPU', selectedGpu],
@@ -66,50 +62,53 @@ function BuildingPage() {
     }),
     [selectedCpu, selectedGpu, selectedMotherboard, selectedRam, selectedPsu, selectedStorage]
   )
-  const bottleneck = estimateBottleneck(selectedCpu, selectedGpu, {
-    resolution,
-    workload,
-    targetFps,
-  })
+  const bottleneck = estimateBottleneck(selectedCpu, selectedGpu)
+  const recommendationSocket = selectedMotherboard?.socket ?? selectedCpu?.socket
+  const shouldRecommendCpu = bottleneck.cpuIndex !== undefined
+    && bottleneck.combinedGpuIndex !== undefined
+    && bottleneck.combinedGpuIndex > bottleneck.cpuIndex
   const handleCpuOptionsChange = useCallback((options: PartOption[]) => {
     setAvailableCpus(options)
   }, [])
   const cpuRecommendations = useMemo(
-    () => bottleneck.status === 'cpu-limited'
+    () => shouldRecommendCpu
       ? recommendCpus(
         availableCpus,
         selectedGpu,
-        { resolution, workload, targetFps },
-        selectedMotherboard?.socket,
+        recommendationSocket,
         selectedCpu
       )
       : [],
     [
       availableCpus,
-      bottleneck.status,
-      resolution,
+      shouldRecommendCpu,
       selectedCpu,
       selectedGpu,
-      selectedMotherboard?.socket,
-      targetFps,
-      workload,
+      recommendationSocket,
     ]
+  )
+  const gpuRecommendations = useMemo(
+    () => selectedCpu && selectedGpu && bottleneck.cpuIndex !== undefined
+      && bottleneck.combinedGpuIndex !== undefined
+      && bottleneck.cpuIndex > bottleneck.combinedGpuIndex
+      ? recommendGpus(availableGpus, selectedCpu, selectedGpu)
+      : [],
+    [availableGpus, bottleneck.combinedGpuIndex, bottleneck.cpuIndex, selectedCpu, selectedGpu]
   )
   const displayedBuildIssues = useMemo(() => {
     if (bottleneck.status === 'balanced' || bottleneck.status === 'insufficient-data') {
       return buildIssues
     }
 
-    const component = bottleneck.status === 'cpu-limited' ? 'CPU' : 'GPU'
     const severity: BuildIssueSeverity = bottleneck.severity === 'critical' ? 'error' : 'warning'
     return [
       ...buildIssues.filter((buildIssue) => buildIssue.id !== 'performance-balance'),
       {
         id: 'bottleneck-estimate',
         severity,
-        title: bottleneck.severity === 'critical'
-          ? `Severe ${component} bottleneck detected`
-          : `Likely ${component} bottleneck detected`,
+        title: bottleneck.status === 'bottleneck'
+          ? 'CPU/GPU bottleneck detected'
+          : 'CPU/GPU compatibility warning',
         message: bottleneck.message,
         parts: ['CPU', 'GPU'],
       },
@@ -182,7 +181,11 @@ function BuildingPage() {
               />
             </div>
             <div data-element="power-part-selection-row" className="grid min-w-0 gap-4 xl:grid-cols-2">
-              <GpuSelector selected={selectedGpu} onSelectedChange={setSelectedGpu} />
+              <GpuSelector
+                selected={selectedGpu}
+                onSelectedChange={setSelectedGpu}
+                onOptionsChange={setAvailableGpus}
+              />
               <PsuSelector selected={selectedPsu} onSelectedChange={setSelectedPsu} />
             </div>
             <RamSelector
@@ -250,69 +253,50 @@ function BuildingPage() {
                       <p data-element="build-issue-message" className="mt-1 leading-5">{buildIssue.message}</p>
                     </li>
                   ))}
+                  {cpuRecommendations.length > 0 && (
+                    <li
+                      data-element="cpu-recommendations"
+                      className={`rounded-xl border px-3 py-2.5 text-xs ${issueStyles.info}`}
+                    >
+                      <p data-element="cpu-recommendations-title" className="font-semibold">
+                        Recommended compatible CPUs
+                      </p>
+                      <ul className="mt-2 space-y-2">
+                        {cpuRecommendations.map((cpu) => (
+                          <li key={cpu.value} data-element="cpu-recommendation">
+                            <p data-element="cpu-recommendation-name" className="font-semibold">{cpu.label}</p>
+                            <p data-element="cpu-recommendation-reason" className="mt-1 leading-5">
+                              {cpu.recommendationReason}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  )}
+                  {gpuRecommendations.length > 0 && (
+                    <li
+                      data-element="gpu-recommendations"
+                      className={`rounded-xl border px-3 py-2.5 text-xs ${issueStyles.info}`}
+                    >
+                      <p data-element="gpu-recommendations-title" className="font-semibold">
+                        Recommended compatible GPUs
+                      </p>
+                      <ul className="mt-2 space-y-2">
+                        {gpuRecommendations.map((gpu) => (
+                          <li key={gpu.value} data-element="gpu-recommendation">
+                            <p data-element="gpu-recommendation-name" className="font-semibold">{gpu.label}</p>
+                            <p data-element="gpu-recommendation-reason" className="mt-1 leading-5">
+                              {gpu.recommendationReason}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  )}
                 </ul>
-                {cpuRecommendations.length > 0 && (
-                  <div
-                    data-element="cpu-recommendations"
-                    className="mt-4 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3"
-                  >
-                    <p data-element="cpu-recommendations-title" className="text-xs font-semibold text-violet-900">
-                      Recommended compatible CPUs
-                    </p>
-                    <ul className="mt-2 space-y-2">
-                      {cpuRecommendations.map((cpu) => (
-                        <li key={cpu.value} data-element="cpu-recommendation">
-                          <p data-element="cpu-recommendation-name" className="text-xs font-semibold text-slate-800">
-                            {cpu.label}
-                          </p>
-                          <p data-element="cpu-recommendation-reason" className="mt-0.5 text-xs leading-5 text-slate-600">
-                            {cpu.recommendationReason}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
               <div data-element="bottleneck-section" className="border-b border-slate-100 p-5">
                 <h3 data-element="bottleneck-title-label" className="text-sm font-bold text-slate-800">Bottleneck estimate</h3>
-                <div data-element="bottleneck-target-controls" className="mt-3 grid grid-cols-2 gap-2">
-                  <label data-element="resolution-control" className="text-xs font-semibold text-slate-600">
-                    Resolution
-                    <select
-                      value={resolution}
-                      onChange={(event) => setResolution(event.target.value as BottleneckResolution)}
-                      className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-normal"
-                    >
-                      <option value="1080p">1080p</option>
-                      <option value="1440p">1440p</option>
-                      <option value="4k">4K</option>
-                    </select>
-                  </label>
-                  <label data-element="target-fps-control" className="text-xs font-semibold text-slate-600">
-                    Target FPS
-                    <select
-                      value={targetFps}
-                      onChange={(event) => setTargetFps(Number(event.target.value))}
-                      className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-normal"
-                    >
-                      <option value={60}>60</option>
-                      <option value={144}>144</option>
-                      <option value={240}>240</option>
-                    </select>
-                  </label>
-                </div>
-                <label data-element="workload-control" className="mt-2 block text-xs font-semibold text-slate-600">
-                  Workload
-                  <select
-                    value={workload}
-                    onChange={(event) => setWorkload(event.target.value as BottleneckWorkload)}
-                    className="mt-1 block w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-normal"
-                  >
-                    <option value="modern-games">Modern games</option>
-                    <option value="esports">High-refresh esports</option>
-                  </select>
-                </label>
                 <div
                   data-element="bottleneck-result"
                   className={`mt-3 rounded-xl border px-3 py-2.5 ${bottleneckStyles[bottleneck.severity]}`}

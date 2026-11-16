@@ -45,7 +45,8 @@ function PsuSelector({ selected, onSelectedChange }: PsuSelectorProps) {
         onSelectedChange(option)
       }}
       isLoading={psu.isLoading} isLoadingMore={psu.isLoadingMore}
-      hasMore={psu.hasMore} onLoadMore={psu.loadMore} error={psu.error}
+      hasMore={psu.hasMore} onLoadMore={psu.loadMore}
+      onMenuOpen={psu.startAutoLoad} onMenuClose={psu.stopAutoLoad} error={psu.error}
       search={psu.search} onSearchChange={psu.setSearch}
     />
   )

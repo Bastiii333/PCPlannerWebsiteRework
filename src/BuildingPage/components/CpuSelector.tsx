@@ -38,6 +38,9 @@ function mapCpu(cpu: PartRecord, index: number): PartOption {
   const supportedRamTypes = Array.isArray(memory?.types)
     ? memory.types.filter((type): type is string => typeof type === 'string')
     : undefined
+  const usableRamTypes = supportedRamTypes && supportedRamTypes.length > 0
+    ? supportedRamTypes
+    : undefined
   const benchmarkScore = typeof cpu.benchmarkScore === 'number'
     ? cpu.benchmarkScore
     : estimateCpuPerformanceScore(cpu)
@@ -50,9 +53,18 @@ function mapCpu(cpu: PartRecord, index: number): PartOption {
     badge: manufacturer,
     socket: typeof cpu.socket === 'string' ? cpu.socket : undefined,
     powerDraw: typeof specifications?.tdp === 'number' ? specifications.tdp : undefined,
-    maxMemoryCapacity: typeof memory?.maxSupport === 'number' ? memory.maxSupport : undefined,
-    supportedRamTypes,
+    maxMemoryCapacity: typeof memory?.maxSupport === 'number' && memory.maxSupport > 0
+      ? memory.maxSupport
+      : undefined,
+    maxMemorySpeed: typeof memory?.maxSpeed === 'number' && memory.maxSpeed > 0
+      ? memory.maxSpeed
+      : typeof memory?.max_speed === 'number' && memory.max_speed > 0
+        ? memory.max_speed
+        : typeof memory?.speed === 'number' && memory.speed > 0 ? memory.speed : undefined,
+    supportedRamTypes: usableRamTypes,
     hasIntegratedGraphics: integratedGraphics?.model !== undefined && integratedGraphics.model !== 'None',
+    coreCount: typeof cpu.cores === 'object' && cpu.cores !== null && 'total' in cpu.cores
+      && typeof cpu.cores.total === 'number' ? cpu.cores.total : undefined,
     benchmarkScore,
   }
 }
@@ -87,7 +99,8 @@ function CpuSelector({
         onSelectedChange(option)
       }}
       isLoading={cpu.isLoading} isLoadingMore={cpu.isLoadingMore}
-      hasMore={cpu.hasMore} onLoadMore={cpu.loadMore} error={cpu.error}
+      hasMore={cpu.hasMore} onLoadMore={cpu.loadMore}
+      onMenuOpen={cpu.startAutoLoad} onMenuClose={cpu.stopAutoLoad} error={cpu.error}
       search={cpu.search} onSearchChange={cpu.setSearch}
     />
   )

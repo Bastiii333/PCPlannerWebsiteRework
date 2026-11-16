@@ -1,5 +1,11 @@
 import type { PartOption } from '../types/parts'
 import type { StorageSelection } from '../components/StorageSelector'
+import {
+  describeCpuGpuMismatch,
+  getCpuGpuCompatibility,
+  hasMixedRamSpeeds,
+  hasRamBottleneck,
+} from './bottleneckEstimator'
 
 export type BuildIssueSeverity = 'error' | 'warning' | 'info'
 
@@ -75,7 +81,7 @@ export function validateBuild(build: BuildSelection): BuildIssue[] {
         ['RAM', 'Motherboard']
       ))
     }
-    if (build.cpu?.supportedRamTypes && populatedRam.some((part) =>
+    if (build.cpu?.supportedRamTypes && build.cpu.supportedRamTypes.length > 0 && populatedRam.some((part) =>
       part.ramType && !build.cpu?.supportedRamTypes?.includes(part.ramType)
     )) {
       issues.push(issue(
@@ -83,6 +89,15 @@ export function validateBuild(build: BuildSelection): BuildIssue[] {
         'error',
         'RAM type is not supported by the CPU',
         `The selected CPU supports ${build.cpu.supportedRamTypes.join(', ')}, but at least one selected RAM module uses a different memory type.`,
+        ['CPU', 'RAM']
+      ))
+    } else if (build.cpu && (!build.cpu.supportedRamTypes || build.cpu.supportedRamTypes.length === 0)
+      && populatedRam.some((part) => part.ramType)) {
+      issues.push(issue(
+        'cpu-ram-type-data',
+        'warning',
+        'CPU RAM support data is missing',
+        'The selected CPU does not provide supported RAM-type data, so CPU and RAM type compatibility cannot be verified accurately.',
         ['CPU', 'RAM']
       ))
     }
@@ -115,6 +130,14 @@ export function validateBuild(build: BuildSelection): BuildIssue[] {
         'error',
         'Memory capacity exceeds CPU support',
         `${totalCapacity}GB is selected, but the CPU supports up to ${build.cpu.maxMemoryCapacity}GB.`,
+        ['CPU', 'RAM']
+      ))
+    } else if (totalCapacity > 0 && build.cpu?.maxMemoryCapacity === undefined) {
+      issues.push(issue(
+        'cpu-ram-capacity-data',
+        'warning',
+        'CPU memory capacity data is missing',
+        'The selected CPU does not provide a maximum supported memory capacity, so this limit cannot be verified accurately.',
         ['CPU', 'RAM']
       ))
     }
@@ -172,26 +195,35 @@ export function validateBuild(build: BuildSelection): BuildIssue[] {
     }
   }
 
-  if (build.cpu && build.gpu
-    && build.cpu.benchmarkScore !== undefined && build.gpu.benchmarkScore !== undefined) {
-    const ratio = build.gpu.benchmarkScore / Math.max(build.cpu.benchmarkScore, 1)
-    if (ratio >= 1.5) {
-      issues.push(issue(
-        'performance-balance',
-        'warning',
-        'CPU/GPU performance may be unbalanced',
-        'The estimated performance of the selected CPU and GPU differs significantly. This may cause a bottleneck depending on the resolution, target FPS, and workload.',
-        ['CPU', 'GPU']
-      ))
-    } else if (ratio <= 0.67) {
-      issues.push(issue(
-        'performance-balance',
-        'warning',
-        'CPU/GPU performance may be unbalanced',
-        'The estimated performance of the selected CPU and GPU differs significantly. This may cause a bottleneck depending on the resolution, target FPS, and workload.',
-        ['CPU', 'GPU']
-      ))
-    }
+  const cpuGpuCompatibility = build.cpu && build.gpu
+    ? getCpuGpuCompatibility(build.cpu, build.gpu)
+    : undefined
+  if (cpuGpuCompatibility && cpuGpuCompatibility.compatSeverity !== 'good') {
+    issues.push(issue(
+      'performance-balance',
+      'warning',
+      'CPU/GPU compatibility warning',
+      describeCpuGpuMismatch(cpuGpuCompatibility),
+      ['CPU', 'GPU']
+    ))
+  }
+  if (hasRamBottleneck(build.cpu, populatedRam)) {
+    issues.push(issue(
+      'ram-speed',
+      'warning',
+      'RAM speed exceeds CPU support',
+      'The selected RAM speed is more than 50 MHz above the CPU-supported memory speed.',
+      ['CPU', 'RAM']
+    ))
+  }
+  if (hasMixedRamSpeeds(populatedRam)) {
+    issues.push(issue(
+      'mixed-ram-speed',
+      'warning',
+      'RAM speeds do not match',
+      'The selected RAM modules have different MT/s speeds. They may run at the lower speed and can be less stable together.',
+      ['RAM']
+    ))
   }
 
   return issues

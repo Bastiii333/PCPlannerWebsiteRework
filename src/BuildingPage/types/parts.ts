@@ -24,6 +24,9 @@ export type PartOption = {
   supportedRamTypes?: string[]
   hasIntegratedGraphics?: boolean
   benchmarkScore?: number
+  coreCount?: number
+  gpuManufacturer?: 'nvidia' | 'amd' | 'intel'
+  gpuPerformanceMetric?: number
 }
 
 export type PartRecord = {

@@ -81,7 +81,8 @@ function MotherboardSelector({
         onSelectedChange(option)
       }}
       isLoading={motherboard.isLoading} isLoadingMore={motherboard.isLoadingMore}
-      hasMore={motherboard.hasMore} onLoadMore={motherboard.loadMore} error={motherboard.error}
+      hasMore={motherboard.hasMore} onLoadMore={motherboard.loadMore}
+      onMenuOpen={motherboard.startAutoLoad} onMenuClose={motherboard.stopAutoLoad} error={motherboard.error}
       search={motherboard.search} onSearchChange={motherboard.setSearch}
     />
   )

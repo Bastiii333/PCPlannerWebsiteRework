@@ -15,6 +15,8 @@ type PartSelectorProps = {
   isLoadingMore: boolean
   hasMore: boolean
   onLoadMore: () => void
+  onMenuOpen: () => void
+  onMenuClose: () => void
   error: string | null
   search: string
   onSearchChange: (value: string) => void
@@ -23,6 +25,7 @@ type PartSelectorProps = {
 function PartSelector({
   windowId, selectionId, inputId, title, icon, options, value, onChange,
   isLoading, isLoadingMore, onLoadMore, error,
+  onMenuOpen, onMenuClose,
   search, onSearchChange,
 }: PartSelectorProps) {
   return (
@@ -74,7 +77,8 @@ function PartSelector({
             isClearable
             menuPortalTarget={document.body}
             menuPosition="fixed"
-            onMenuOpen={onLoadMore}
+            onMenuOpen={onMenuOpen}
+            onMenuClose={onMenuClose}
             onMenuScrollToBottom={onLoadMore}
             noOptionsMessage={() =>
               error && options.length === 0

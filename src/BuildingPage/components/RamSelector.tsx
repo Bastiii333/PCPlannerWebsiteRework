@@ -106,7 +106,8 @@ function RamSelector({ slotCount, ramType, selected, onSelectedChange }: RamSele
                 isClearable
                 menuPortalTarget={document.body}
                 menuPosition="fixed"
-                onMenuOpen={ram.loadMore}
+                onMenuOpen={ram.startAutoLoad}
+                onMenuClose={ram.stopAutoLoad}
                 onMenuScrollToBottom={ram.loadMore}
                 noOptionsMessage={() =>
                   ram.error && options.length === 0

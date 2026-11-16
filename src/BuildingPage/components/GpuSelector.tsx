@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import PartSelector from './PartSelector'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
@@ -7,10 +7,26 @@ import gpuIcon from '../../assets/gpu icon.jpg'
 
 function mapGpu(gpu: PartRecord, index: number): PartOption {
   const name = gpu.metadata?.name ?? String(gpu.name ?? gpu.chipset ?? gpu.opendb_id ?? `GPU ${index + 1}`)
-  const manufacturer = gpu.metadata?.manufacturer
+  const manufacturer = typeof gpu.manufacturer === 'string'
+    ? gpu.manufacturer
+    : gpu.metadata?.manufacturer
+  const chipsetManufacturer = typeof gpu.vendor === 'string'
+    ? gpu.vendor
+    : typeof gpu.chipset_manufacturer === 'string'
+      ? gpu.chipset_manufacturer
+      : manufacturer
+  const gpuManufacturer = typeof chipsetManufacturer === 'string' && /nvidia/i.test(chipsetManufacturer)
+    ? 'nvidia'
+    : typeof chipsetManufacturer === 'string' && /amd/i.test(chipsetManufacturer)
+      ? 'amd'
+      : typeof chipsetManufacturer === 'string' && /intel/i.test(chipsetManufacturer)
+        ? 'intel'
+        : undefined
   const details = [
     manufacturer,
-    typeof gpu.chipset === 'string' ? gpu.chipset : undefined,
+    typeof gpu.gpuName === 'string'
+      ? gpu.gpuName
+      : typeof gpu.chipset === 'string' ? gpu.chipset : undefined,
     typeof gpu.memory === 'number' ? `${gpu.memory}GB` : undefined,
     typeof gpu.interface === 'string' ? gpu.interface : undefined,
     typeof gpu.tdp === 'number' ? `${gpu.tdp}W TDP` : undefined,
@@ -26,17 +42,30 @@ function mapGpu(gpu: PartRecord, index: number): PartOption {
     benchmarkScore: typeof gpu.benchmarkScore === 'number'
       ? gpu.benchmarkScore
       : estimateGpuPerformanceScore(gpu),
+    gpuManufacturer,
+    gpuPerformanceMetric: gpuManufacturer === 'nvidia' && typeof gpu.shaders === 'number'
+      ? gpu.shaders
+      : gpuManufacturer === 'amd' && typeof gpu.computeUnits === 'number'
+        ? gpu.computeUnits
+        : gpuManufacturer === 'intel' && typeof gpu.executionUnits === 'number'
+          ? gpu.executionUnits
+          : undefined,
   }
 }
 
 type GpuSelectorProps = {
   selected: PartOption | null
   onSelectedChange: (option: PartOption | null) => void
+  onOptionsChange?: (options: PartOption[]) => void
 }
 
-function GpuSelector({ selected, onSelectedChange }: GpuSelectorProps) {
+function GpuSelector({ selected, onSelectedChange, onOptionsChange }: GpuSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapGpu(part, index), [])
   const gpu = usePaginatedParts<PartRecord>('http://localhost:3000/api/gpus', mapPart)
+
+  useEffect(() => {
+    onOptionsChange?.(gpu.options)
+  }, [gpu.options, onOptionsChange])
 
   return (
     <PartSelector
@@ -49,7 +78,8 @@ function GpuSelector({ selected, onSelectedChange }: GpuSelectorProps) {
         onSelectedChange(option)
       }}
       isLoading={gpu.isLoading} isLoadingMore={gpu.isLoadingMore}
-      hasMore={gpu.hasMore} onLoadMore={gpu.loadMore} error={gpu.error}
+      hasMore={gpu.hasMore} onLoadMore={gpu.loadMore}
+      onMenuOpen={gpu.startAutoLoad} onMenuClose={gpu.stopAutoLoad} error={gpu.error}
       search={gpu.search} onSearchChange={gpu.setSearch}
     />
   )
