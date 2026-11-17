@@ -4,6 +4,7 @@ import { selectStyles } from './selectorStyles'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
 import ramIcon from '../../assets/ram icon.jpg'
+import { apiUrl } from '../../api'
 
 type RamSelectorProps = {
   slotCount: number
@@ -36,7 +37,7 @@ function mapRam(ram: PartRecord, index: number): PartOption {
 
 function RamSelector({ slotCount, ramType, selected, onSelectedChange }: RamSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapRam(part, index), [])
-  const ram = usePaginatedParts<PartRecord>('http://localhost:3000/api/rams', mapPart)
+  const ram = usePaginatedParts<PartRecord>('/api/rams', mapPart)
   const options = useMemo(
     () => ramType
       ? ram.options.filter((option) => option.ramType === ramType)

@@ -6,6 +6,7 @@ import { selectStyles } from './selectorStyles'
 import nvmeIcon from '../../assets/nvme icon.jpg'
 import ssdIcon from '../../assets/ssd icon.jpg'
 import hddIcon from '../../assets/hdd icon.jpg'
+import { apiUrl } from '../../api'
 
 type StorageSelection = {
   type: StorageType
@@ -159,7 +160,7 @@ function StorageSelector({
 }: StorageSelectorProps) {
   const [storageOptions, setStorageOptions] = useState<StorageSelection[]>(selected)
   const mapPart = useCallback((part: PartRecord, index: number) => mapStorage(part, index), [])
-  const storage = usePaginatedParts<PartRecord>('http://localhost:3000/api/storage', mapPart)
+  const storage = usePaginatedParts<PartRecord>(apiUrl('/api/storage'), mapPart)
   const nvmeOptions = useMemo(
     () => storage.options.filter((option) => option.storageType === 'nvme'),
     [storage.options]

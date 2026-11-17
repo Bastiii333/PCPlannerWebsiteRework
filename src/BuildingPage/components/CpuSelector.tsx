@@ -4,6 +4,7 @@ import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
 import { estimateCpuPerformanceScore } from '../validation/performanceScore'
 import cpuIcon from '../../assets/cpu icon.jpg'
+import { apiUrl } from '../../api'
 
 type CpuSelectorProps = {
   selected: PartOption | null
@@ -76,7 +77,7 @@ function CpuSelector({
   onOptionsChange,
 }: CpuSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapCpu(part, index), [])
-  const cpu = usePaginatedParts<PartRecord>('http://localhost:3000/api/cpus', mapPart)
+  const cpu = usePaginatedParts<PartRecord>(apiUrl('/api/cpus'), mapPart)
   const options = useMemo(
     () => compatibleSocket
       ? cpu.options.filter((option) => option.socket === compatibleSocket)

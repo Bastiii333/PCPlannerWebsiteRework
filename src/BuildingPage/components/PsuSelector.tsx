@@ -3,6 +3,7 @@ import PartSelector from './PartSelector'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
 import psuIcon from '../../assets/psu icon.jpg'
+import { apiUrl } from '../../api'
 
 function mapPsu(psu: PartRecord, index: number): PartOption {
   const name = psu.metadata?.name ?? String(psu.name ?? psu.opendb_id ?? `PSU ${index + 1}`)
@@ -32,7 +33,7 @@ type PsuSelectorProps = {
 
 function PsuSelector({ selected, onSelectedChange }: PsuSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapPsu(part, index), [])
-  const psu = usePaginatedParts<PartRecord>('http://localhost:3000/api/psus', mapPart)
+  const psu = usePaginatedParts<PartRecord>(apiUrl('/api/psus'), mapPart)
 
   return (
     <PartSelector

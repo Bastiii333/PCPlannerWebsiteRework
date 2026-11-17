@@ -4,6 +4,7 @@ import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
 import { estimateGpuPerformanceScore } from '../validation/performanceScore'
 import gpuIcon from '../../assets/gpu icon.jpg'
+import { apiUrl } from '../../api'
 
 function mapGpu(gpu: PartRecord, index: number): PartOption {
   const name = gpu.metadata?.name ?? String(gpu.name ?? gpu.chipset ?? gpu.opendb_id ?? `GPU ${index + 1}`)
@@ -61,7 +62,7 @@ type GpuSelectorProps = {
 
 function GpuSelector({ selected, onSelectedChange, onOptionsChange }: GpuSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapGpu(part, index), [])
-  const gpu = usePaginatedParts<PartRecord>('http://localhost:3000/api/gpus', mapPart)
+  const gpu = usePaginatedParts<PartRecord>('/api/gpus', mapPart)
 
   useEffect(() => {
     onOptionsChange?.(gpu.options)

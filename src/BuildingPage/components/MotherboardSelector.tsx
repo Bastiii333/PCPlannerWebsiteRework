@@ -3,6 +3,7 @@ import PartSelector from './PartSelector'
 import type { PartOption, PartRecord } from '../types/parts'
 import { usePaginatedParts } from '../hooks/usePaginatedParts'
 import motherboardIcon from '../../assets/mobo icon.jpg'
+import { apiUrl } from '../../api'
 
 type MotherboardSelectorProps = {
   selected: PartOption | null
@@ -65,7 +66,7 @@ function MotherboardSelector({
   compatibleSocket,
 }: MotherboardSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapMotherboard(part, index), [])
-  const motherboard = usePaginatedParts<PartRecord>('http://localhost:3000/api/motherboards', mapPart)
+  const motherboard = usePaginatedParts<PartRecord>(apiUrl('/api/motherboards'), mapPart)
   const options = compatibleSocket
     ? motherboard.options.filter((option) => option.socket === compatibleSocket)
     : motherboard.options
