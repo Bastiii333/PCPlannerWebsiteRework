@@ -1,7 +1,7 @@
 import Select from 'react-select'
 import type { PartOption } from '../types/parts'
 import { selectStyles } from './selectorStyles'
-import { apiUrl } from '../../api'
+
 
 type PartSelectorProps = {
   windowId: string
