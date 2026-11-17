@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.env.local
 # Backend dependencies and generated output
 PCPlannerBackend/node_modules/
 PCPlannerBackend/dist/

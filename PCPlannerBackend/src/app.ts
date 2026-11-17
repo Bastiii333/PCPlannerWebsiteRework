@@ -4,9 +4,17 @@ import { supabaseRequest } from "./supabase.js";
 
 const app = express();
 
+const frontendOrigin = process.env.FRONTEND_ORIGIN;
+
+if (!frontendOrigin) {
+  throw new Error('FRONTEND_ORIGIN is not configured');
+}
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: frontendOrigin,
 }));
+
+
 app.use(express.json());
 
 app.get("/api/health", (_req, res) => {

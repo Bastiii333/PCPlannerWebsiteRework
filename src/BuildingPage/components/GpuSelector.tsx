@@ -62,7 +62,7 @@ type GpuSelectorProps = {
 
 function GpuSelector({ selected, onSelectedChange, onOptionsChange }: GpuSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapGpu(part, index), [])
-  const gpu = usePaginatedParts<PartRecord>('/api/gpus', mapPart)
+  const gpu = usePaginatedParts<PartRecord>(apiUrl('/api/gpus'), mapPart)
 
   useEffect(() => {
     onOptionsChange?.(gpu.options)

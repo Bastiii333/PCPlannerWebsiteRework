@@ -37,7 +37,7 @@ function mapRam(ram: PartRecord, index: number): PartOption {
 
 function RamSelector({ slotCount, ramType, selected, onSelectedChange }: RamSelectorProps) {
   const mapPart = useCallback((part: PartRecord, index: number) => mapRam(part, index), [])
-  const ram = usePaginatedParts<PartRecord>('/api/rams', mapPart)
+  const ram = usePaginatedParts<PartRecord>(apiUrl('/api/rams'), mapPart)
   const options = useMemo(
     () => ramType
       ? ram.options.filter((option) => option.ramType === ramType)
