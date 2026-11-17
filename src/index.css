@@ -13,7 +13,7 @@
 }
 
 @utility selector-icon {
-  @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-base;
+  @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-base;
 }
 
 @utility selector-icon-image {
@@ -21,7 +21,7 @@
 }
 
 @utility selector-kicker {
-  @apply text-xs font-medium text-violet-600;
+  @apply text-xs font-medium text-blue-900;
 }
 
 @utility selector-title {
@@ -57,7 +57,7 @@
 }
 
 @utility selector-option-badge {
-  @apply mb-1 block text-[10px] font-bold uppercase tracking-wide text-violet-600;
+  @apply mb-1 block text-[10px] font-bold uppercase tracking-wide text-blue-900;
 }
 
 @utility selector-option-price {

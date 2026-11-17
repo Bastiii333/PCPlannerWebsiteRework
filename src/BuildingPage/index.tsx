@@ -143,7 +143,7 @@ function BuildingPage() {
         >
           <p
             data-element="page-label"
-            className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-violet-600"
+            className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-blue-900"
           >
             PC Planner
           </p>
@@ -211,12 +211,12 @@ function BuildingPage() {
           >
             <div data-element="build-summary-content" className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <div data-element="build-summary-header" className="border-b border-slate-100 bg-slate-50 px-5 py-5">
-                <p data-element="summary-label" className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-600">
+                <p data-element="summary-label" className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-900">
                   Build summary
                 </p>
                 <div className="mt-2 flex items-end justify-between gap-4">
                   <h2 data-element="summary-title" className="text-xl font-bold tracking-tight text-slate-900">Your PC build</h2>
-                  <span data-element="summary-selection-count" className="rounded-full bg-violet-100 px-2.5 py-1 text-xs font-semibold text-violet-700">
+                  <span data-element="summary-selection-count" className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-800">
                     {selectedCount}/{summaryParts.length} selected
                   </span>
                 </div>

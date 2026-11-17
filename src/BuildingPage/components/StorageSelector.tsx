@@ -100,7 +100,7 @@ function StorageSelect({
                 data-element="storage-type-option"
                 type="button"
                 className={`rounded-md px-2 py-1 text-[10px] font-semibold uppercase ${
-                  storageType === type ? 'bg-white text-violet-700 shadow-sm' : 'text-slate-500'
+                  storageType === type ? 'bg-white text-blue-800 shadow-sm' : 'text-slate-500'
                 }`}
                 aria-pressed={storageType === type}
                 onClick={() => onStorageTypeChange(type)}
